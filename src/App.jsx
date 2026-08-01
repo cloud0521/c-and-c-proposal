@@ -49,6 +49,13 @@ export default function App() {
     const container = containerRef.current
     if (!container) return
 
+    const handleScroll = () => {
+      if (!guestRef.current && container.scrollTop > 10) {
+        container.scrollTo({ top: 0, behavior: 'instant' })
+        setToast('Please search and select your name first.')
+      }
+    }
+
     const sections = container.querySelectorAll('.page')
     const observer = new IntersectionObserver((entries) => {
       if (navigationLock.current) return
@@ -56,7 +63,7 @@ export default function App() {
         if (entry.isIntersecting) {
           const index = Number(entry.target.dataset.index)
           if (index > 0 && !guestRef.current) {
-            container.scrollTo({ top: 0, behavior: 'smooth' })
+            container.scrollTo({ top: 0, behavior: 'instant' })
             setToast('Please search and select your name first.')
             return
           }
@@ -65,8 +72,13 @@ export default function App() {
       })
     }, { root: container, threshold: 0.55 })
 
+    container.addEventListener('scroll', handleScroll, { passive: true })
     sections.forEach((sec) => observer.observe(sec))
-    return () => observer.disconnect()
+    
+    return () => {
+      container.removeEventListener('scroll', handleScroll)
+      observer.disconnect()
+    }
   }, [])
 
   const goTo = (target) => {
@@ -164,7 +176,7 @@ export default function App() {
 
     <section id="page-1" data-index="1" className={`page proposal-page ${page === 1 ? 'active' : ''}`}>
       <div className="page-inner">
-        <img src="/logo.png" alt="C & C Logo" className="couple-logo" />
+        <img src={logoLogo} alt="C & C Logo" className="couple-logo" />
         <p className="page-kicker">A personal proposal for</p>
         <h2 className="proposal-name">{guest?.name || 'Someone special'}</h2>
         <div className="vintage-ornament">❦ ❧ ❦</div>
@@ -181,7 +193,7 @@ export default function App() {
 
     <section id="page-2" data-index="2" className={`page details-page ${page === 2 ? 'active' : ''}`}>
       <div className="page-inner">
-        <img src="/logo.png" alt="C & C Logo" className="couple-logo" />
+        <img src={logoLogo} alt="C & C Logo" className="couple-logo" />
         <p className="page-kicker">Save the date</p>
         <h2 className="details-title">Our wedding day</h2>
         <div className="vintage-divider">❧</div>
