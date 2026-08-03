@@ -115,31 +115,32 @@ export default function App() {
 
   const matches = useMemo(() => query.trim() ? guests.filter(p => p.name.toLowerCase().includes(query.toLowerCase())).slice(0, 6) : [], [query])
   
-  useEffect(() => {
-    const updateIntroRect = () => {
-      if (coverLogoRef.current) {
-        const rect = coverLogoRef.current.getBoundingClientRect()
-        if (rect.width > 0) {
-          const windowCenterX = window.innerWidth / 2
-          const windowCenterY = window.innerHeight / 2
-          const logoCenterX = rect.left + rect.width / 2
-          const logoCenterY = rect.top + rect.height / 2
+  const updateIntroRect = () => {
+    if (coverLogoRef.current) {
+      const rect = coverLogoRef.current.getBoundingClientRect()
+      if (rect.width > 0) {
+        const windowCenterX = window.innerWidth / 2
+        const windowCenterY = window.innerHeight / 2
+        const logoCenterX = rect.left + rect.width / 2
+        const logoCenterY = rect.top + rect.height / 2
 
-          const deltaX = windowCenterX - logoCenterX
-          const deltaY = windowCenterY - logoCenterY
+        const deltaX = windowCenterX - logoCenterX
+        const deltaY = windowCenterY - logoCenterY
 
-          setIntroStyle({
-            position: 'fixed',
-            top: `${rect.top}px`,
-            left: `${rect.left}px`,
-            width: `${rect.width}px`,
-            height: `${rect.height}px`,
-            '--delta-x': `${deltaX}px`,
-            '--delta-y': `${deltaY}px`,
-          })
-        }
+        setIntroStyle({
+          position: 'fixed',
+          top: `${rect.top}px`,
+          left: `${rect.left}px`,
+          width: `${rect.width}px`,
+          height: `${rect.height}px`,
+          '--delta-x': `${deltaX}px`,
+          '--delta-y': `${deltaY}px`,
+        })
       }
     }
+  }
+
+  useEffect(() => {
     updateIntroRect()
     window.addEventListener('resize', updateIntroRect)
     return () => window.removeEventListener('resize', updateIntroRect)
@@ -373,6 +374,7 @@ export default function App() {
           src={logoLogo} 
           alt="C & C Logo" 
           className="couple-logo" 
+          onLoad={updateIntroRect}
           style={{ opacity: showIntro ? 0 : 1, transition: 'opacity 0.3s ease' }}
           onClick={handleLogoClick}
         />
