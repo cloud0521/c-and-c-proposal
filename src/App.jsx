@@ -34,6 +34,7 @@ function GreenScreenVideo({ src }) {
     const ctx = canvas.getContext('2d', { willReadFrequently: true })
     let animationFrameId
 
+    video.currentTime = 0
     video.play().catch(() => {})
 
     const render = () => {
@@ -190,8 +191,6 @@ export default function App() {
     const saved = localStorage.getItem(`cloyd-cyrin-rsvp-${person.name}`)
     setHasResponded(!!saved)
     
-    // Allow 300ms for mobile keyboard collapse and viewport height (100dvh)
-    // to finish stabilizing before starting the scroll to page 1
     setTimeout(() => {
       goTo(1)
     }, 300)
@@ -202,15 +201,25 @@ export default function App() {
   const accept = async (event) => { 
     event.preventDefault(); 
     setRsvpStatus('submitting');
+    
     const data = { name: form.name, role: guest?.role || '', note: form.note, response: 'Joyfully accepts', submittedAt: new Date().toISOString() }; 
     const endpoint = import.meta.env.VITE_RSVP_ENDPOINT; 
+    
+    // Create a minimum 2500ms delay so the rings animation can be fully enjoyed
+    const minAnimationDelay = new Promise(resolve => setTimeout(resolve, 2500));
+
     try { 
-      if (endpoint) {
-        await fetch(endpoint, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); 
-      } else {
-        await new Promise(res => setTimeout(res, 1200));
-        localStorage.setItem(`cloyd-cyrin-rsvp-${data.name}`, JSON.stringify(data)); 
-      }
+      const requestPromise = (async () => {
+        if (endpoint) {
+          await fetch(endpoint, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); 
+        } else {
+          localStorage.setItem(`cloyd-cyrin-rsvp-${data.name}`, JSON.stringify(data)); 
+        }
+      })();
+
+      // Wait for BOTH the network request AND the minimum animation time to finish
+      await Promise.all([requestPromise, minAnimationDelay]);
+
       setRsvpStatus('success'); 
       setHasResponded(true);
       setTimeout(() => {
@@ -230,6 +239,9 @@ export default function App() {
   }
 
   return <main className={`invitation-app ${keyboardOpen ? 'keyboard-open' : ''}`} ref={containerRef}>
+    {/* Silent background video preloader so it loads instantly from cache when the modal opens */}
+    <video src={ringsMp4Url} preload="auto" muted playsInline style={{ display: 'none' }} />
+
     <div className="glitters-container">
       {sparkles.map(s => (
         <div
