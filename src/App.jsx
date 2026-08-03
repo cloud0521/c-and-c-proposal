@@ -101,6 +101,7 @@ export default function App() {
   const [form, setForm] = useState({ name: '', note: '' })
   const [hasResponded, setHasResponded] = useState(false)
   const [keyboardOpen, setKeyboardOpen] = useState(false)
+  const [showIntro, setShowIntro] = useState(true)
   
   const guestRef = useRef(null)
   const navigationLock = useRef(false)
@@ -110,6 +111,13 @@ export default function App() {
 
   const matches = useMemo(() => query.trim() ? guests.filter(p => p.name.toLowerCase().includes(query.toLowerCase())).slice(0, 6) : [], [query])
   
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowIntro(false)
+    }, 3000)
+    return () => clearTimeout(timer)
+  }, [])
+
   useEffect(() => { 
     if (toast) { 
       const timer = setTimeout(() => setToast(''), 4000); 
@@ -233,6 +241,12 @@ export default function App() {
   }
 
   return <main className={`invitation-app ${keyboardOpen ? 'keyboard-open' : ''}`} ref={containerRef}>
+    {showIntro && (
+      <div className="logo-intro-overlay">
+        <img src={logoLogo} alt="C & C Logo" className="intro-splash-logo" />
+      </div>
+    )}
+
     <video src={ringsMp4Url} preload="auto" muted playsInline style={{ display: 'none' }} />
 
     <div className="glitters-container">
@@ -258,6 +272,11 @@ export default function App() {
 .pagination-dots button.dot{width:8px;height:8px;border-radius:50%;background:#e1a68e55;border:none;padding:0;cursor:pointer;transition:all .3s ease}
 .pagination-dots button.dot.active{background:#e1a68e;transform:scale(1.35);box-shadow:0 0 8px #e1a68eaa}
 
+.logo-intro-overlay{position:fixed;inset:0;background:#360817;z-index:99999;display:flex;justify-content:center;align-items:flex-start;padding-top:clamp(45px,7vh,95px);animation:fadeOutOverlay 0.4s ease 2.6s forwards}
+.intro-splash-logo{width:110px;height:auto;object-fit:contain;transform-origin:top center;animation:logoShrinkSequence 3s cubic-bezier(0.16,1,.3,1) forwards}
+@keyframes logoShrinkSequence{0%,70%{transform:scale(7.5);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes fadeOutOverlay{to{opacity:0;pointer-events:none}}
+
 @media(max-width:620px){.mini-events{grid-template-columns:1fr}.mini-event:first-child{border-right:0;border-bottom:1px solid #ead5cd}.response-actions,.modal-actions{flex-direction:column;align-items:center}}`}</style>
     
     <style>{`.page.active .cover-subtitle,.page.active .page-kicker{animation:slideUp .7s .16s both}.page.active .cover-title,.page.active .proposal-name,.page.active .details-title{animation:dramaticReveal .9s .25s cubic-bezier(.16,1,.3,1) both;will-change:transform,opacity;backface-visibility:hidden}.page.active .message{animation:slideUp .75s .52s both}.page.active .lookup,.page.active .mini-events,.page.active .response-actions,.page.active .proposal-role{animation:slideUp .8s .68s both}.page.active .mini-event{animation:cardPop .7s both}.page.active .mini-event:nth-child(2){animation-delay:.14s}.page.active .response-actions button{animation:buttonIn .65s .82s both}.page.active .response-actions button:nth-child(2){animation-delay:.94s}.response-actions button,.modal-actions button,.error-dialog button,.results button{transition:transform .2s cubic-bezier(.2,1.5,.5,1),box-shadow .2s,background .2s;position:relative;overflow:hidden}.response-actions button:not(.decline-button):hover,.modal-actions button:not(.decline-button):hover,.error-dialog button:hover{transform:translateY(-5px) scale(1.04);box-shadow:0 12px 24px #13020a66}.response-actions button:not(.decline-button):active,.modal-actions button:not(.decline-button):active,.error-dialog button:active{transform:scale(.93);box-shadow:none}.response-actions button:not(.decline-button):before,.modal-actions button:not(.decline-button):before,.error-dialog button:before{content:'';position:absolute;inset:0;background:linear-gradient(105deg,transparent 30%,#ffffff9c 47%,transparent 64%);transform:translateX(-130%);transition:transform .55s}.response-actions button:not(.decline-button):hover:before,.modal-actions button:not(.decline-button):hover:before,.error-dialog button:hover:before{transform:translateX(130%)}.decline-button:hover{animation:declineJitter .35s linear infinite;filter:saturate(1.25)}.results{animation:resultsDrop .35s cubic-bezier(.16,1,.3,1) both}.results button{animation:resultSlide .4s both}.results button:nth-child(2){animation-delay:.05s}.results button:nth-child(3){animation-delay:.1s}.results button:nth-child(4){animation-delay:.15s}.results button:nth-child(5){animation-delay:.2s}.results button:hover{transform:translateX(7px);box-shadow:-5px 0 #c6907b inset}.modal-backdrop{animation:backdropIn .25s both}.rsvp-modal{animation:modalBurst .62s cubic-bezier(.16,1.3,.3,1) both}.error-backdrop{animation:warningFlash .45s both}.error-dialog{animation:errorImpact .7s cubic-bezier(.18,1.55,.38,1) both}.error-icon{animation:warningPulse 1.1s .4s infinite}.toast{animation:toastFly .6s cubic-bezier(.16,1.2,.3,1) both}.status-view{min-height:280px;display:flex;flex-direction:column;justify-content:center;align-items:center;animation:statusFadeIn .45s cubic-bezier(.16,1,.3,1) both}.status-view h3{font:600 32px/1.1 'Playfair Display';color:#58122a;margin:10px 0}.wedding-loader{display:flex;justify-content:center;align-items:center;height:140px;margin:5px auto 15px}.rings-container-wrapper{position:relative;display:inline-block;filter:drop-shadow(0 0 12px rgba(255,215,150,0.35))}.rings-animation-img{width:220px;height:auto;object-fit:contain;animation:ringMetallicShine 3s infinite ease-in-out}.ring-glint{position:absolute;width:6px;height:6px;background:#ffffff;border-radius:50%;box-shadow:0 0 10px 3px #ffffff, 0 0 20px 8px #ffd284;pointer-events:none;opacity:0;mix-blend-mode:screen}.ring-glint.glint-1{top:20px;left:55px;animation:realisticGlint 2.2s infinite ease-in-out;animation-delay:0.2s}.ring-glint.glint-2{top:45px;right:45px;animation:realisticGlint 2.8s infinite ease-in-out;animation-delay:1.1s}.ring-glint.glint-3{bottom:25px;left:85px;animation:realisticGlint 2.5s infinite ease-in-out;animation-delay:0.6s}@keyframes ringMetallicShine{0%,100%{filter:brightness(1) contrast(1.05)}50%{filter:brightness(1.22) contrast(1.12) drop-shadow(0 0 18px rgba(255,223,165,0.7))}}@keyframes realisticGlint{0%,100%{transform:scale(0.1) rotate(0deg);opacity:0}50%{transform:scale(1.4) rotate(45deg);opacity:0.95}}@keyframes successPop{0%{transform:scale(0) rotate(-20deg);opacity:0}70%{transform:scale(1.15) rotate(5deg)}100%{transform:scale(1) rotate(0deg);opacity:1}}@keyframes statusFadeIn{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:none}}@keyframes dramaticReveal{from{opacity:0;transform:translate3d(0,35px,0) scale(.96);filter:blur(4px)}to{opacity:1;transform:translate3d(0,0,0) scale(1);filter:blur(0)}}@keyframes slideUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}@keyframes cardPop{from{opacity:0;transform:perspective(700px) rotateX(35deg) translateY(25px)}to{opacity:1;transform:none}}@keyframes buttonIn{from{opacity:0;transform:scale(.45) rotate(-10deg)}to{opacity:1;transform:none}}@keyframes declineJitter{25%{transform:translateX(-3px) rotate(-1deg)}75%{transform:translateX(3px) rotate(1deg)}}@keyframes pagerRise{from{opacity:0;transform:translate(-50%,25px)}to{opacity:1;transform:translate(-50%,0)}}@keyframes dotPulse{50%{box-shadow:0 0 0 6px #e7ae9133}}@keyframes resultsDrop{from{opacity:0;transform:translateY(-12px) scale(.96)}to{opacity:1;transform:none}}@keyframes resultSlide{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}@keyframes backdropIn{from{opacity:0}to{opacity:1}}@keyframes modalBurst{0%{opacity:0;transform:scale(.38) rotate(-5deg)}68%{transform:scale(1.05) rotate(1deg)}100%{opacity:1;transform:none}}@keyframes warningFlash{0%,100%{background:#250510bd}35%{background:#a5213ebd}}@keyframes errorImpact{0%{opacity:0;transform:scale(.15) rotate(-12deg)}50%{transform:scale(1.12) rotate(3deg)}72%{transform:scale(.96) rotate(-1deg)}100%{opacity:1;transform:none}}@keyframes warningPulse{50%{transform:scale(1.18);box-shadow:0 0 0 12px #a5213e2e}}@keyframes toastFly{from{opacity:0;transform:translate(-50%,45px) scale(.7)}to{opacity:1;transform:translate(-50%,0) scale(1)}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}`}</style>
@@ -271,12 +290,12 @@ export default function App() {
           onClick={handleLogoClick}
           onAnimationEnd={handleAnimationEnd}
         />
-        <p className="cover-subtitle">Cloyd &amp; Cyrin</p>
-        <p className="cover-subtitle" style={{marginTop: '-15px'}}>December 19, 2026</p>
+        <p className="cover-subtitle">Cloyd &amp; Cyrin · December 19, 2026</p>
         <div className="cover-collapsible">
           <h1 className="cover-title">A special place<i>for you</i></h1>
           <div className="vintage-divider">❧</div>
           <p className="message">Find your name to receive your personal wedding proposal.</p>
+          <p className="cover-subtitle">Saturday · 9:00 AM</p>
         </div>
         <div className="lookup">
           <input 
@@ -396,8 +415,7 @@ export default function App() {
             <div className="vintage-ornament">❦ ❧ ❦</div>
             <p className="message">Thank you for being an integral part of our lives. A formal invitation with further specifics and details will follow soon as we prepare to celebrate our special day.</p>
             <div className="vintage-divider">❖</div>
-            <p className="cover-subtitle" style={{marginTop: '25px'}}>Cloyd &amp; Cyrin</p>
-            <p className="cover-subtitle" style={{marginTop: '-20px'}}>December 19, 2026</p>
+            <p className="cover-subtitle" style={{marginTop: '25px'}}>Cloyd &amp; Cyrin · December 19, 2026</p>
           </div>
         </section>
 
