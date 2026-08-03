@@ -35,6 +35,7 @@ export default function App() {
   const navigationLock = useRef(false)
   const navigationTimer = useRef(null)
   const containerRef = useRef(null)
+  const inputRef = useRef(null)
 
   const matches = useMemo(() => query.trim() ? guests.filter(p => p.name.toLowerCase().includes(query.toLowerCase())).slice(0, 6) : [], [query])
   
@@ -103,6 +104,10 @@ export default function App() {
   }
 
   const choose = (person) => { 
+    inputRef.current?.blur()
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur()
+    }
     guestRef.current = person
     setGuest(person)
     setForm({ name: person.name, note: '' })
@@ -156,7 +161,18 @@ export default function App() {
         <p className="message">Find your name to receive your personal wedding proposal.</p>
         <p className="cover-subtitle">Saturday · 9:00 AM</p>
         <div className="lookup">
-          <input autoComplete="off" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search your name" aria-label="Search your name" />
+          <input 
+            ref={inputRef}
+            autoComplete="off" 
+            value={query} 
+            onChange={e => {
+              setQuery(e.target.value);
+              if (toast) setToast('');
+            }} 
+            onFocus={() => setToast('')}
+            placeholder="Search your name" 
+            aria-label="Search your name" 
+          />
           {matches.length > 0 && (
             <div className="results">
               {matches.map(person => (
