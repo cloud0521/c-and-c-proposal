@@ -121,44 +121,25 @@ export default function App() {
     const container = containerRef.current
     if (!container) return
 
-    const handleScroll = () => {
-      if (!guestRef.current && container.scrollTop > 10) {
-        container.scrollTo({ top: 0, behavior: 'instant' })
-        setToast('Please search and select your name first.')
-      }
-    }
-
     const sections = container.querySelectorAll('.page')
     const observer = new IntersectionObserver((entries) => {
       if (navigationLock.current) return
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           const index = Number(entry.target.dataset.index)
-          if (index > 0 && !guestRef.current) {
-            container.scrollTo({ top: 0, behavior: 'instant' })
-            setToast('Please search and select your name first.')
-            return
-          }
           setPage(index)
         }
       })
     }, { root: container, threshold: 0.55 })
 
-    container.addEventListener('scroll', handleScroll, { passive: true })
     sections.forEach((sec) => observer.observe(sec))
     
     return () => {
-      container.removeEventListener('scroll', handleScroll)
       observer.disconnect()
     }
-  }, [])
+  }, [guest])
 
   const goTo = (target) => {
-    if (target > 0 && !guestRef.current) {
-      setToast('Please search and select your name first.')
-      containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
-      return
-    }
     navigationLock.current = true
     window.clearTimeout(navigationTimer.current)
     setPage(target)
@@ -188,7 +169,6 @@ export default function App() {
     setForm({ name: person.name, note: '' })
     setQuery('')
     
-    // Robust check against the standardized production cache key format
     const cacheKey = `c&c-${person.name.trim().toLowerCase()}`
     const saved = localStorage.getItem(cacheKey) || localStorage.getItem(`cloyd-cyrin-rsvp-${person.name}`)
     setHasResponded(!!saved)
@@ -204,7 +184,6 @@ export default function App() {
     event.preventDefault(); 
     setRsvpStatus('submitting');
     
-    // Enforce strict usage of the selected guest name to prevent spoofing/editing in the modal
     const verifiedName = guest?.name || form.name;
     const data = { name: verifiedName, role: guest?.role || '', note: form.note, response: 'Joyfully accepts', submittedAt: new Date().toISOString() }; 
     const endpoint = import.meta.env.VITE_RSVP_ENDPOINT; 
@@ -216,7 +195,6 @@ export default function App() {
         if (endpoint) {
           await fetch(endpoint, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); 
         } 
-        // Save using the standardized c&c cache key format
         const cacheKey = `c&c-${verifiedName.trim().toLowerCase()}`;
         localStorage.setItem(cacheKey, JSON.stringify(data)); 
       })();
@@ -268,12 +246,12 @@ export default function App() {
     <section id="page-0" data-index="0" className={`page cover ${page === 0 ? 'active' : ''} ${keyboardOpen ? 'keyboard-open' : ''}`}>
       <div className="page-inner">
         <img src={logoLogo} alt="C & C Logo" className="couple-logo" />
-        <p className="cover-subtitle">Cloyd &amp; Cyrin</p>
-        <p className="cover-subtitle" style={{marginTop: '-15px'}} >December 19, 2026</p>
+        <p className="cover-subtitle">Cloyd &amp; Cyrin · December 19, 2026</p>
         <div className="cover-collapsible">
           <h1 className="cover-title">A special place<i>for you</i></h1>
           <div className="vintage-divider">❧</div>
           <p className="message">Find your name to receive your personal wedding proposal.</p>
+          <p className="cover-subtitle">Saturday · 9:00 AM</p>
         </div>
         <div className="lookup">
           <input 
@@ -314,69 +292,73 @@ export default function App() {
       </div>
     </section>
 
-    <section id="page-1" data-index="1" className={`page proposal-page ${page === 1 ? 'active' : ''}`}>
-      <div className="page-inner">
-        <img src={logoLogo} alt="C & C Logo" className="couple-logo" />
-        <p className="page-kicker">A personal proposal for</p>
-        <h2 className="proposal-name">{guest?.name || 'Someone special'}</h2>
-        <div className="vintage-ornament">❦ ❧ ❦</div>
-        <p className="page-kicker">Will you stand beside us as our</p>
-        <h3 className="proposal-role">{guest?.role || 'Wedding Entourage'}?</h3>
-        <div className="vintage-divider">◆</div>
-        <p className="message">As we begin our forever, it would mean the world to have you share this beautiful day. Your love and support are a gift we will always treasure.</p>
-        <div className="response-actions">
-          {hasResponded ? (
-            <div className="already-responded-badge" style={{color: '#e5a78e', font: '12px "DM Mono"', letterSpacing: '0.15em', textTransform: 'uppercase', padding: '12px', textAlign: 'center'}}>
-              ✓ You have already responded (Joyfully Accepted)
+    {/* Conditionally render downstream pages so scrolling past page 0 is physically impossible until a name is selected */}
+    {guest && (
+      <>
+        <section id="page-1" data-index="1" className={`page proposal-page ${page === 1 ? 'active' : ''}`}>
+          <div className="page-inner">
+            <img src={logoLogo} alt="C & C Logo" className="couple-logo" />
+            <p className="page-kicker">A personal proposal for</p>
+            <h2 className="proposal-name">{guest?.name || 'Someone special'}</h2>
+            <div className="vintage-ornament">❦ ❧ ❦</div>
+            <p className="page-kicker">Will you stand beside us as our</p>
+            <h3 className="proposal-role">{guest?.role || 'Wedding Entourage'}?</h3>
+            <div className="vintage-divider">◆</div>
+            <p className="message">As we begin our forever, it would mean the world to have you share this beautiful day. Your love and support are a gift we will always treasure.</p>
+            <div className="response-actions">
+              {hasResponded ? (
+                <div className="already-responded-badge" style={{color: '#e5a78e', font: '12px "DM Mono"', letterSpacing: '0.15em', textTransform: 'uppercase', padding: '12px', textAlign: 'center'}}>
+                  ✓ You have already responded (Joyfully Accepted)
+                </div>
+              ) : (
+                <>
+                  <button onClick={() => setOpen(true)}>Joyfully accept</button>
+                  <button className="decline-button" onClick={decline}>Decline</button>
+                </>
+              )}
             </div>
-          ) : (
-            <>
-              <button onClick={() => setOpen(true)}>Joyfully accept</button>
-              <button className="decline-button" onClick={decline}>Decline</button>
-            </>
-          )}
-        </div>
-      </div>
-    </section>
+          </div>
+        </section>
 
-    <section id="page-2" data-index="2" className={`page details-page ${page === 2 ? 'active' : ''}`}>
-      <div className="page-inner">
-        <img src={logoLogo} alt="C & C Logo" className="couple-logo" />
-        <p className="page-kicker">Save the date</p>
-        <h2 className="details-title">Our wedding day</h2>
-        <div className="vintage-divider">❧</div>
-        <p className="message" style={{color:'#765963'}}>Saturday, December 19, 2026 · 9:00 AM</p>
-        <div className="mini-events">
-          <article className="mini-event">
-            <p className="page-kicker">The ceremony</p>
-            <h3>Our Lady of Salvation Parish</h3>
-            <div className="vintage-ornament" style={{fontSize:'10px',margin:'4px 0'}}>✧ ✧ ✧</div>
-            <p>Prk 6, Brgy. Cabacungan<br/>La Castellana, Negros Occidental</p>
-            <a target="_blank" rel="noreferrer" href="https://www.google.com/maps/search/?api=1&query=Our+Lady+of+Salvation+Parish+Prk+6+Brgy+Cabacungan+La+Castellana">Get directions ↗</a>
-          </article>
-          <article className="mini-event">
-            <p className="page-kicker">The reception</p>
-            <h3>F&amp;C Guest House</h3>
-            <div className="vintage-ornament" style={{fontSize:'10px',margin:'4px 0'}}>✧ ✧ ✧</div>
-            <p>Cor. Rizal &amp; Mabini Streets<br/>Canlaon City, Negros Oriental</p>
-            <a target="_blank" rel="noreferrer" href="https://www.google.com/maps/search/?api=1&query=F%26C+Guest+House+Canlaon+City">Get directions ↗</a>
-          </article>
-        </div>
-      </div>
-    </section>
+        <section id="page-2" data-index="2" className={`page details-page ${page === 2 ? 'active' : ''}`}>
+          <div className="page-inner">
+            <img src={logoLogo} alt="C & C Logo" className="couple-logo" />
+            <p className="page-kicker">Save the date</p>
+            <h2 className="details-title">Our wedding day</h2>
+            <div className="vintage-divider">❧</div>
+            <p className="message" style={{color:'#765963'}}>Saturday, December 19, 2026 · 9:00 AM</p>
+            <div className="mini-events">
+              <article className="mini-event">
+                <p className="page-kicker">The ceremony</p>
+                <h3>Our Lady of Salvation Parish</h3>
+                <div className="vintage-ornament" style={{fontSize:'10px',margin:'4px 0'}}>✧ ✧ ✧</div>
+                <p>Prk 6, Brgy. Cabacungan<br/>La Castellana, Negros Occidental</p>
+                <a target="_blank" rel="noreferrer" href="https://www.google.com/maps/search/?api=1&query=Our+Lady+of+Salvation+Parish+Prk+6+Brgy+Cabacungan+La+Castellana">Get directions ↗</a>
+              </article>
+              <article className="mini-event">
+                <p className="page-kicker">The reception</p>
+                <h3>F&amp;C Guest House</h3>
+                <div className="vintage-ornament" style={{fontSize:'10px',margin:'4px 0'}}>✧ ✧ ✧</div>
+                <p>Cor. Rizal &amp; Mabini Streets<br/>Canlaon City, Negros Oriental</p>
+                <a target="_blank" rel="noreferrer" href="https://www.google.com/maps/search/?api=1&query=F%26C+Guest+House+Canlaon+City">Get directions ↗</a>
+              </article>
+            </div>
+          </div>
+        </section>
 
-    <section id="page-3" data-index="3" className={`page thank-you-page ${page === 3 ? 'active' : ''}`}>
-      <div className="page-inner">
-        <img src={logoLogo} alt="C & C Logo" className="couple-logo" />
-        <p className="page-kicker">With deepest gratitude</p>
-        <h2 className="proposal-name" style={{fontSize: 'clamp(38px, 6vw, 72px)'}}>Thank you</h2>
-        <div className="vintage-ornament">❦ ❧ ❦</div>
-        <p className="message">Thank you for being an integral part of our lives. A formal invitation with further specifics and details will follow soon as we prepare to celebrate our special day.</p>
-        <div className="vintage-divider">❖</div>
-        <p className="cover-subtitle" style={{marginTop: '25px'}}>Cloyd &amp; Cyrin</p>
-        <p className="cover-subtitle" style={{marginTop: '-10px'}}>December 19, 2026</p>
-      </div>
-    </section>
+        <section id="page-3" data-index="3" className={`page thank-you-page ${page === 3 ? 'active' : ''}`}>
+          <div className="page-inner">
+            <img src={logoLogo} alt="C & C Logo" className="couple-logo" />
+            <p className="page-kicker">With deepest gratitude</p>
+            <h2 className="proposal-name" style={{fontSize: 'clamp(38px, 6vw, 72px)'}}>Thank you</h2>
+            <div className="vintage-ornament">❦ ❧ ❦</div>
+            <p className="message">Thank you for being an integral part of our lives. A formal invitation with further specifics and details will follow soon as we prepare to celebrate our special day.</p>
+            <div className="vintage-divider">❖</div>
+            <p className="cover-subtitle" style={{marginTop: '25px'}}>Cloyd &amp; Cyrin · December 19, 2026</p>
+          </div>
+        </section>
+      </>
+    )}
 
     {open && (
       <div className="modal-backdrop" onMouseDown={handleCloseModal}>
@@ -392,7 +374,6 @@ export default function App() {
               <div className="vintage-ornament" style={{margin:'-15px 0 15px'}}>❧</div>
               <label>
                 Your name
-                {/* Locked down with readOnly to block spoofing/editing loopholes */}
                 <input required value={form.name} readOnly style={{ opacity: 0.85, cursor: 'not-allowed', backgroundColor: '#efe4de' }} />
               </label>
               <label>
