@@ -188,7 +188,9 @@ export default function App() {
     setForm({ name: person.name, note: '' })
     setQuery('')
     
-    const saved = localStorage.getItem(`cloyd-cyrin-rsvp-${person.name}`)
+    // Robust check against the standardized production cache key format
+    const cacheKey = `c&c-${person.name.trim().toLowerCase()}`
+    const saved = localStorage.getItem(cacheKey) || localStorage.getItem(`cloyd-cyrin-rsvp-${person.name}`)
     setHasResponded(!!saved)
     
     setTimeout(() => {
@@ -202,22 +204,23 @@ export default function App() {
     event.preventDefault(); 
     setRsvpStatus('submitting');
     
-    const data = { name: form.name, role: guest?.role || '', note: form.note, response: 'Joyfully accepts', submittedAt: new Date().toISOString() }; 
+    // Enforce strict usage of the selected guest name to prevent spoofing/editing in the modal
+    const verifiedName = guest?.name || form.name;
+    const data = { name: verifiedName, role: guest?.role || '', note: form.note, response: 'Joyfully accepts', submittedAt: new Date().toISOString() }; 
     const endpoint = import.meta.env.VITE_RSVP_ENDPOINT; 
     
-    // Create a minimum 2500ms delay so the rings animation can be fully enjoyed
     const minAnimationDelay = new Promise(resolve => setTimeout(resolve, 2500));
 
     try { 
       const requestPromise = (async () => {
         if (endpoint) {
           await fetch(endpoint, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); 
-        } else {
-          localStorage.setItem(`cloyd-cyrin-rsvp-${data.name}`, JSON.stringify(data)); 
-        }
+        } 
+        // Save using the standardized c&c cache key format
+        const cacheKey = `c&c-${verifiedName.trim().toLowerCase()}`;
+        localStorage.setItem(cacheKey, JSON.stringify(data)); 
       })();
 
-      // Wait for BOTH the network request AND the minimum animation time to finish
       await Promise.all([requestPromise, minAnimationDelay]);
 
       setRsvpStatus('success'); 
@@ -239,7 +242,6 @@ export default function App() {
   }
 
   return <main className={`invitation-app ${keyboardOpen ? 'keyboard-open' : ''}`} ref={containerRef}>
-    {/* Silent background video preloader so it loads instantly from cache when the modal opens */}
     <video src={ringsMp4Url} preload="auto" muted playsInline style={{ display: 'none' }} />
 
     <div className="glitters-container">
@@ -389,7 +391,8 @@ export default function App() {
               <div className="vintage-ornament" style={{margin:'-15px 0 15px'}}>❧</div>
               <label>
                 Your name
-                <input required value={form.name} onChange={e => setForm({...form,name:e.target.value})} />
+                {/* Locked down with readOnly to block spoofing/editing loopholes */}
+                <input required value={form.name} readOnly style={{ opacity: 0.85, cursor: 'not-allowed', backgroundColor: '#efe4de' }} />
               </label>
               <label>
                 Message for the couple
