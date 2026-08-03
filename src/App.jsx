@@ -378,12 +378,14 @@ export default function App() {
           style={{ opacity: showIntro ? 0 : 1, transition: 'opacity 0.3s ease' }}
           onClick={handleLogoClick}
         />
-        <p className="cover-subtitle">Cloyd &amp; Cyrin · December 19, 2026</p>
+        <p className="cover-subtitle">Cloyd &amp; Cyrin</p>
+        <p className="cover-subtitle" style={{marginTop: '-15px'}}>December 19, 2026</p>
+
+        
         <div className="cover-collapsible">
           <h1 className="cover-title">A special place<i>for you</i></h1>
           <div className="vintage-divider">❧</div>
           <p className="message">Find your name to receive your personal wedding proposal.</p>
-          <p className="cover-subtitle">Saturday · 9:00 AM</p>
         </div>
         <div className="lookup">
           <input 
@@ -500,7 +502,8 @@ export default function App() {
             <div className="vintage-ornament">❦ ❧ ❦</div>
             <p className="message">Thank you for being an integral part of our lives. A formal invitation with further specifics and details will follow soon as we prepare to celebrate our special day.</p>
             <div className="vintage-divider">❖</div>
-            <p className="cover-subtitle" style={{marginTop: '25px'}}>Cloyd &amp; Cyrin · December 19, 2026</p>
+            <p className="cover-subtitle" style={{marginTop: '25px'}}>Cloyd &amp; Cyrin</p>
+            <p className="cover-subtitle" style={{marginTop: '-15px'}}>December 19, 2026</p>
           </div>
         </section>
 
