@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import './index.css'
-import logoLogo from './logo.png'
+import logoLogo from './logo2.png'
 import ringsMp4Url from './rings.mp4'
 
 const entourage = [
