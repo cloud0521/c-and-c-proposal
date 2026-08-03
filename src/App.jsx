@@ -268,12 +268,12 @@ export default function App() {
     <section id="page-0" data-index="0" className={`page cover ${page === 0 ? 'active' : ''} ${keyboardOpen ? 'keyboard-open' : ''}`}>
       <div className="page-inner">
         <img src={logoLogo} alt="C & C Logo" className="couple-logo" />
-        <p className="cover-subtitle">Cloyd &amp; Cyrin · December 19, 2026</p>
+        <p className="cover-subtitle">Cloyd &amp; Cyrin</p>
+        <p className="cover-subtitle" style={{marginTop: '-15px'}} >December 19, 2026</p>
         <div className="cover-collapsible">
           <h1 className="cover-title">A special place<i>for you</i></h1>
           <div className="vintage-divider">❧</div>
           <p className="message">Find your name to receive your personal wedding proposal.</p>
-          <p className="cover-subtitle">Saturday · 9:00 AM</p>
         </div>
         <div className="lookup">
           <input 
@@ -373,7 +373,8 @@ export default function App() {
         <div className="vintage-ornament">❦ ❧ ❦</div>
         <p className="message">Thank you for being an integral part of our lives. A formal invitation with further specifics and details will follow soon as we prepare to celebrate our special day.</p>
         <div className="vintage-divider">❖</div>
-        <p className="cover-subtitle" style={{marginTop: '25px'}}>Cloyd &amp; Cyrin · December 19, 2026</p>
+        <p className="cover-subtitle" style={{marginTop: '25px'}}>Cloyd &amp; Cyrin</p>
+        <p className="cover-subtitle" style={{marginTop: '-10px'}}>December 19, 2026</p>
       </div>
     </section>
 
