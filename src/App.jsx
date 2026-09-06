@@ -6,11 +6,11 @@ import ringsMp4Url from './rings.mp4'
 const entourage = [
   ['Maid of Honor', ['Mary Grace Mendania']], ['Best Man', ['Noel Rashed Peñacuba']],
   ['Bridesmaid', ['Jolina Mana-ay', 'Emerly Keith Belonta', 'Riza Mae Morales', 'Nenen More', 'Nofe Glydell Peñacuba']],
-  ['Groomsman', ['Ronel Naynay', 'John Gerald Sa-onoy (yob2)', 'Kurt Adrian Mendania', 'Cyberhelle Ricaplaza', 'Ralfh Laurence Deles']],
-  ['Principal Sponsor', ['Mr. & Mrs. Joselito Martinez', 'Mr. & Mrs. Jun Garde', 'Mr. & Mrs. Randy Santisteban', 'Mr. & Mrs. Lea Casio', 'Mr. & Mrs. Renato Mendania', 'Mr. & Mrs. Jessy Bejo', 'Mr. & Mrs. Jess Alba', 'Mr. Edwin Erlano', 'Mr. & Mrs. Roy Palmares', 'Mr. & Mrs. Adelly Diotay', 'Mr. & Mrs. Lemuel Tuvida', 'Mr. & Mrs. Vincent Geniebla', 'Mr. & Mrs. Allan De Jose', 'Mr. & Mrs. Suzette De Jose', 'Mrs. Faith Feria', 'Mr. & Mrs. Ritzan Baygar', 'Mr. & Mrs. Rogelio Salsalida', 'Mr. & Mrs. Magbanua', 'Mamcy', 'Eufemia Quilino', 'Emily Presquito', 'Belly Pateño', 'Bebing De Jose']],
-  ['Candle Sponsor', ['Ziza & Redan Ortega']], ['Cord Sponsor', ['Charmie & Carl John Argando']], ['Veil Sponsor', ['Mr. & Mrs. Roberto Argando']],
-  ['Flower Girl', ['Maria Zhavia Mendania', 'Jewel Jade Mendania', 'Gianna Cuizon', 'Yuna Argando', 'Feliz Perez', 'Zhydyn Diotay', 'Elly Brynn D. Marco']],
-  ['Ring Bearer', ['Zidan Ziandre Ortega']], ['Bible Bearer', ['Zeke Dollosa']], ['Coin Bearer', ['Chaiff Antionne Perez']], ['Banner Bearer', ['Redan Ortega Jr.']],
+  ['Groomsman', ['Cyberhelle Ricaplaza', 'Ralfh Laurence Deles', 'Kurt Adrian Mendania', 'Ezekiel Mendania', 'Jason Client Pagador']],
+  ['Principal Sponsor', ['Mr. & Mrs. Joselito Martinez', 'Mr. & Mrs. Jun Garde', 'Mr. & Mrs. Randy Santisteban', 'Mr. & Mrs. Lea Casio', 'Mr. & Mrs. Renato Mendania', 'Mr. & Mrs. Jessy Bejo', 'Mr. & Mrs. Jess Alba', 'Mr. Edwin Erlano', 'Mr. & Mrs. Roy Palmares', 'Mr. & Mrs. Adelly Diotay', 'Mr. & Mrs. Lemuel Tuvida', 'Mr. & Mrs. Vincent Geniebla', 'Mr. & Mrs. Allan De Jose', 'Mr. & Mrs. Suzette De Jose', 'Mrs. Faith Feria', 'Mr. & Mrs. Ritzan Baygar', 'Mr. & Mrs. Rogelio Salsalida', 'Mr. & Mrs. Magbanua', 'Mr. & Mrs. Tumambid', 'Ta Jing', 'Mamcy', 'Eufemia Quilino', 'Emily Presquito', 'Belly Pateño', 'Bebing De Jose', 'Grace']],
+  ['Candle Sponsor', ['Mr. & Mrs. Charlie Perez']], ['Cord Sponsor', ['Mr. & Mrs. Carl John Argando']], ['Veil Sponsor', ['Mr. & Mrs. Roberto Argando']],
+  ['Flower Girl', ['Maria Zhavia Mendania', 'Jewel Jade Mendania', 'Gianna Cuizon', 'Yuna Argando', 'Clieanna Felize Perez', 'Zhydyn Diotay', 'Elly Brynn Marco', 'Eliana Zale Villarin']],
+  ['Ring Bearer', ['Ziandre Danlly Ortega']], ['Bible Bearer', ['Zeke Dollosa']], ['Coin Bearer', ['Chaiff Antoine Perez']], ['Banner Bearer', ['Redan Ortega Jr.']],
 ]
 const guests = entourage.flatMap(([role, names]) => names.map(name => ({ name, role })))
 
@@ -184,15 +184,23 @@ export default function App() {
       }
 
       const scrollTop = container.scrollTop
-      const windowHeight = container.clientHeight
       const pages = container.querySelectorAll('.page')
       if (pages.length === 0) return
 
-      const pageHeight = pages[0].clientHeight || windowHeight
-      const exactPage = scrollTop / pageHeight
-      const pageIndex = Math.min(Math.floor(exactPage), pages.length - 2 >= 0 ? pages.length - 1 : 0)
+      let pageIndex = pages.length - 1
+      for (let idx = 0; idx < pages.length - 1; idx += 1) {
+        if (scrollTop < pages[idx + 1].offsetTop) {
+          pageIndex = idx
+          break
+        }
+      }
       const nextPageIndex = Math.min(pageIndex + 1, pages.length - 1)
-      const progress = exactPage - pageIndex
+      const pageStart = pages[pageIndex].offsetTop
+      const pageEnd = pages[nextPageIndex].offsetTop
+      const distance = Math.max(pageEnd - pageStart, 1)
+      const rawProgress = nextPageIndex === pageIndex ? 0 : (scrollTop - pageStart) / distance
+      const progress = Math.min(Math.max(rawProgress, 0), 1)
+      const easedProgress = progress * progress * (3 - 2 * progress)
 
       const currPageEl = pages[pageIndex]
       const nextCurrPageEl = pages[nextPageIndex]
@@ -205,35 +213,22 @@ export default function App() {
       const rectA = currLogo.getBoundingClientRect()
       const rectB = nextLogo ? nextLogo.getBoundingClientRect() : rectA
 
-      const x = rectA.left + (rectB.left - rectA.left) * progress
-      const y = rectA.top + (rectB.top - rectA.top) * progress
+      const x = rectA.left + (rectB.left - rectA.left) * easedProgress
+      const y = rectA.top + (rectB.top - rectA.top) * easedProgress
 
       const lift = Math.sin(progress * Math.PI) // 0 -> 1 -> 0
-      const scale = 1.0 + 1.3 * lift // 1.0 -> 2.3
+      const scale = 1 + 0.55 * lift
 
-      const rotateZ = Math.sin(progress * Math.PI * 2) * 2 * lift
-      const rotateY = Math.cos(progress * Math.PI) * 5 * lift
-      const rotateX = Math.sin(progress * Math.PI) * 4 * lift
+      const rotateZ = Math.sin(progress * Math.PI * 2) * 0.8 * lift
+      const rotateY = Math.cos(progress * Math.PI) * 2 * lift
+      const rotateX = Math.sin(progress * Math.PI) * 1.5 * lift
 
-      const oscillation = Math.sin(scrollTop * 0.05) * 6 * lift
-
-      const shadowBlur = 30 + 30 * lift
-      const shadowOpacity = 0.25 + 0.15 * lift
-      const glowOpacity = 0.5 * lift
-
-      let landingOffset = 0
-      if (progress > 0.85) {
-        const pLand = (progress - 0.85) / 0.15
-        landingOffset = Math.sin(pLand * Math.PI * 1.5) * 4 * (1 - pLand)
-      } else if (progress < 0.15 && pageIndex > 0) {
-        const pLift = progress / 0.15
-        landingOffset = Math.sin(pLift * Math.PI * 1.5) * 4 * (1 - pLift)
-      }
-
-      const finalY = y + oscillation + landingOffset
+      const shadowBlur = 22 + 20 * lift
+      const shadowOpacity = 0.2 + 0.12 * lift
+      const glowOpacity = 0.35 * lift
 
       logoEl.style.opacity = '1'
-      logoEl.style.transform = `translate3d(${x}px, ${finalY}px, 0) scale(${scale}) rotateX(${rotateX}deg) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg) translateZ(0)`
+      logoEl.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${scale}) rotateX(${rotateX}deg) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg)`
       logoEl.style.filter = `drop-shadow(0 ${shadowBlur}px ${shadowBlur * 2}px rgba(0,0,0,${shadowOpacity})) drop-shadow(0 0 ${18 * glowOpacity}px rgba(255,220,150,${glowOpacity}))`
 
       // Subtle backdrop blur on page content behind logo while lifted
@@ -254,8 +249,8 @@ export default function App() {
       // Sparkles positioning & opacity
       const sparkleEls = container.querySelectorAll('.floating-sparkle')
       sparkleEls.forEach((sp, idx) => {
-        const angle = (idx / sparkleEls.length) * Math.PI * 2 + scrollTop * 0.01
-        const dist = 55 + Math.sin(scrollTop * 0.02 + idx) * 15
+        const angle = (idx / sparkleEls.length) * Math.PI * 2 + scrollTop * 0.004
+        const dist = 55 + Math.sin(scrollTop * 0.008 + idx) * 8
         const spX = x + 55 + Math.cos(angle) * dist
         const spY = y + 50 + Math.sin(angle) * dist
         sp.style.transform = `translate3d(${spX}px, ${spY}px, 0) translateZ(0)`
