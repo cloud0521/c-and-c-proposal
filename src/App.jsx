@@ -516,7 +516,7 @@ export default function App() {
               <div className="proposal-composition">
                 <EditorialPhoto photo={photography.proposalHero} className="proposal-photo" priority />
                 <p className="page-kicker">{guest?.name}</p>
-                <p className="romantic-line">Some moments are simply too meaningful<br />to celebrate without the people we love.</p>
+                <p className="romantic-line">Some moments are simply too meaningful <br/>to celebrate without the people we love.</p>
                 <div className={`role-ornament ${guest?.category || 'diamond'}`} aria-hidden="true">◇</div>
                 <p className="proposal-lead">{guest?.lead || 'Will you stand beside us as our'}</p>
                 <h3 className="proposal-role">{guest?.title || guest?.role || 'Wedding Entourage'}?</h3>
