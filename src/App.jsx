@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './index.css'
 import logoLogo from './logo.png'
 import ringsMp4Url from './rings.mp4'
@@ -10,16 +10,7 @@ import acceptanceClose960 from './assets/photos/acceptance-close-960.webp'
 import acceptanceClose1920 from './assets/photos/acceptance-close-1920.webp'
 import closing960 from './assets/photos/closing-960.webp'
 import closing1920 from './assets/photos/closing-1920.webp'
-
-const entourage = [
-  ['Maid of Honor', ['Mary Grace Mendania']], ['Best Man', ['Noel Rashed Peñacuba']],
-  ['Bridesmaid', ['Jolina Mana-ay', 'Emerly Keith Belonta', 'Riza Mae Morales', 'Nenen More', 'Nofe Glydell Peñacuba']],
-  ['Groomsman', ['Cyberhelle Ricaplaza', 'Ralfh Laurence Deles', 'Kurt Adrian Mendania', 'Ezekiel Mendania', 'Jason Client Pagador']],
-  ['Principal Sponsor', ['Mr. & Mrs. Joselito Martinez', 'Mr. & Mrs. Jun Garde', 'Mr. & Mrs. Randy Santisteban', 'Mr. & Mrs. Lea Casio', 'Mr. & Mrs. Renato Mendania', 'Mr. & Mrs. Jessy Bejo', 'Mr. & Mrs. Jess Alba', 'Mr. Edwin Erlano', 'Mr. & Mrs. Roy Palmares', 'Mr. & Mrs. Adelly Diotay', 'Mr. & Mrs. Lemuel Tuvida', 'Mr. & Mrs. Vincent Geniebla', 'Mr. & Mrs. Allan De Jose', 'Mr. & Mrs. Suzette De Jose', 'Mrs. Faith Feria', 'Mr. & Mrs. Ritzan Baygar', 'Mr. & Mrs. Rogelio Salsalida', 'Mr. & Mrs. Magbanua', 'Mr. & Mrs. Tumambid', 'Ta Jing', 'Mamcy', 'Eufemia Quilino', 'Emily Presquito', 'Belly Pateño', 'Bebing De Jose', 'Grace']],
-  ['Candle Sponsor', ['Mr. & Mrs. Charlie Perez']], ['Cord Sponsor', ['Mr. & Mrs. Carl John Argando']], ['Veil Sponsor', ['Mr. & Mrs. Roberto Argando']],
-  ['Flower Girl', ['Maria Zhavia Mendania', 'Jewel Jade Mendania', 'Gianna Cuizon', 'Yuna Argando', 'Clieanna Felize Perez', 'Zhydyn Diotay', 'Elly Brynn Marco', 'Eliana Zale Villarin']],
-  ['Ring Bearer', ['Ziandre Danlly Ortega']], ['Bible Bearer', ['Zeke Dollosa']], ['Coin Bearer', ['Chaiff Antoine Perez']], ['Banner Bearer', ['Redan Ortega Jr.']],
-]
+import { searchEntourage, submitEntourageResponse } from './lib/supabase'
 const roleDetails = {
   'Maid of Honor': { lead: 'Will you stand beside me as my', category: 'floral' },
   'Best Man': { lead: 'Will you stand beside me as my', category: 'branch' },
@@ -36,13 +27,7 @@ const roleDetails = {
   'Banner Bearer': { lead: 'Will you help lead our celebration as our', category: 'branch' },
 }
 
-const guests = entourage.flatMap(([role, names]) => names.map((name, index) => ({
-  id: `${role}-${index}`.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-  name,
-  shortName: name.replace(/^Mr\. & Mrs\. |^Mrs\. |^Mr\. /, '').split(/[ &]/)[0],
-  role,
-  ...roleDetails[role],
-})))
+const PERSONAL_REVEAL_DURATION_MS = 2300
 
 const photography = {
   proposalHero: { src: proposal1920, srcSet: `${proposal960} 960w, ${proposal1920} 1920w`, alt: 'Cloyd and Cyrin in formal wedding attire', desktopPosition: '50% 42%', mobilePosition: '34% 42%' },
@@ -162,6 +147,7 @@ export default function App() {
   const [showIntro, setShowIntro] = useState(true)
   const [openingState, setOpeningState] = useState('idle')
   const [proposalReady, setProposalReady] = useState(false)
+  const [matches, setMatches] = useState([])
   
   const guestRef = useRef(null)
   const navigationLock = useRef(false)
@@ -170,7 +156,41 @@ export default function App() {
   const inputRef = useRef(null)
   const watermarkRef = useRef(null)
 
-  const matches = useMemo(() => query.trim() ? guests.filter(p => p.name.toLowerCase().includes(query.toLowerCase())).slice(0, 6) : [], [query])
+  useEffect(() => {
+    const search = query.trim()
+    if (search.length < 3) {
+      setMatches([])
+      return undefined
+    }
+
+    let cancelled = false
+    const timer = window.setTimeout(async () => {
+      try {
+        const rows = await searchEntourage(search)
+        if (cancelled) return
+        setMatches(rows.map((row) => ({
+          id: row.entourage_id,
+          name: row.full_name,
+          shortName: row.full_name.replace(/^Mr\. & Mrs\. |^Mrs\. |^Mr\. /, '').split(/[ &]/)[0],
+          role: row.role,
+          responseStatus: row.response_status,
+          personalMessage: row.personal_message,
+          photoPath: row.photo_path,
+          ...roleDetails[row.role],
+        })))
+      } catch {
+        if (!cancelled) {
+          setMatches([])
+          setToast('We could not search the guest list. Please try again.')
+        }
+      }
+    }, 280)
+
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
+    }
+  }, [query])
   
   useEffect(() => { 
     if (toast) { 
@@ -193,6 +213,8 @@ export default function App() {
 
       if (showIntro) {
         logoEl.style.opacity = '0'
+        logoEl.style.zIndex = '0'
+        logoEl.style.filter = 'none'
         return
       }
 
@@ -215,16 +237,16 @@ export default function App() {
       const progress = Math.min(Math.max(rawProgress, 0), 1)
       const lift = Math.sin(progress * Math.PI)
       const currentIsIvory = pageIndex === 2
-      const nextIsIvory = nextPageIndex === 2
-      const restingOpacity = pageIndex === 0 ? 0.055 : 0.032
-      let opacity = restingOpacity + lift * 0.09
-
-      if (currentIsIvory && nextIsIvory) opacity = 0
-      else if (nextIsIvory) opacity *= 1 - progress
-      else if (currentIsIvory) opacity *= progress
+      const restingOpacity = currentIsIvory ? 0 : (pageIndex === 0 ? 0.055 : 0.032)
+      const opacity = Math.min(restingOpacity + lift * 0.94, 1)
+      const isFlying = lift > 0.04
 
       logoEl.style.opacity = String(opacity)
-      logoEl.style.transform = `translate3d(-50%, calc(-50% - ${lift * 18}px), 0) scale(${1 + lift * 0.045})`
+      logoEl.style.zIndex = isFlying ? '10' : '0'
+      logoEl.style.filter = isFlying
+        ? `drop-shadow(0 ${10 + lift * 8}px ${24 + lift * 18}px rgba(35, 3, 14, ${0.32 + lift * 0.28})) drop-shadow(0 0 ${8 + lift * 12}px rgba(247, 232, 180, ${lift * 0.48}))`
+        : 'none'
+      logoEl.style.transform = `translate3d(-50%, calc(-50% - ${lift * 34}px), 0) scale(${1 + lift * 0.11})`
     }
 
     const handleScroll = () => {
@@ -296,11 +318,10 @@ export default function App() {
     setProposalReady(false)
     setForm({ name: person.name, note: '' })
     setQuery('')
-    setTimeout(() => setProposalReady(true), 850)
+    setTimeout(() => setProposalReady(true), PERSONAL_REVEAL_DURATION_MS)
     
-    const cacheKey = `c&c-${person.name.trim().toLowerCase()}`
-    const saved = localStorage.getItem(cacheKey) || localStorage.getItem(`cloyd-cyrin-rsvp-${person.name}`)
-    setHasResponded(!!saved)
+    // Supabase is the single source of truth for finalized responses.
+    setHasResponded(person.responseStatus !== 'pending')
     
     setTimeout(() => {
       goTo(1)
@@ -309,32 +330,25 @@ export default function App() {
 
   const decline = () => setDeclineStage('confirm')
 
-  const confirmDecline = () => {
-    const verifiedName = guest?.name || form.name
-    const data = { name: verifiedName, role: guest?.role || '', note: '', response: 'Unable to accept', submittedAt: new Date().toISOString() }
-    localStorage.setItem(`c&c-${verifiedName.trim().toLowerCase()}`, JSON.stringify(data))
-    setHasResponded(true)
-    setDeclineStage('complete')
+  const confirmDecline = async () => {
+    try {
+      await submitEntourageResponse({ entourageId: guest?.id, response: 'declined', message: null })
+      setHasResponded(true)
+      setDeclineStage('complete')
+    } catch {
+      setDeclineStage(null)
+      setToast('Your response could not be saved. Please try again.')
+    }
   }
   
   const accept = async (event) => { 
     event.preventDefault(); 
     setRsvpStatus('submitting');
     
-    const verifiedName = guest?.name || form.name;
-    const data = { name: verifiedName, role: guest?.role || '', note: form.note, response: 'Joyfully accepts', submittedAt: new Date().toISOString() }; 
-    const endpoint = import.meta.env.VITE_RSVP_ENDPOINT; 
-    
     const minAnimationDelay = new Promise(resolve => setTimeout(resolve, 2500));
 
     try { 
-      const requestPromise = (async () => {
-        if (endpoint) {
-          await fetch(endpoint, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); 
-        } 
-        const cacheKey = `c&c-${verifiedName.trim().toLowerCase()}`;
-        localStorage.setItem(cacheKey, JSON.stringify(data)); 
-      })();
+      const requestPromise = submitEntourageResponse({ entourageId: guest?.id, response: 'accepted', message: form.note });
 
       await Promise.all([requestPromise, minAnimationDelay]);
 
@@ -428,7 +442,7 @@ export default function App() {
     <style>{`
       :root{--monogram-rest-opacity:.055;--monogram-photo-opacity:.032;--monogram-transition-opacity:.14;--monogram-size:clamp(180px,38vw,460px)}
       .invitation-app{background:#350713;background-image:radial-gradient(circle at 50% 0,#65182c55,transparent 46%),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E")}
-      .proposal-monogram{display:block;object-fit:contain;pointer-events:none;user-select:none}.proposal-monogram--hero{width:clamp(118px,22vw,180px);height:auto;margin:auto;filter:drop-shadow(0 12px 32px #10000699)}.proposal-monogram--watermark{position:fixed;z-index:0;left:50%;top:50%;width:var(--monogram-size);height:auto;opacity:0;transform:translate3d(-50%,-50%,0);transition:opacity .2s linear;will-change:transform,opacity}
+      .proposal-monogram{display:block;object-fit:contain;pointer-events:none;user-select:none}.proposal-monogram--hero{width:clamp(118px,22vw,180px);height:auto;margin:auto;filter:drop-shadow(0 12px 32px #10000699)}.proposal-monogram--watermark{position:fixed;z-index:0;left:50%;top:50%;width:var(--monogram-size);height:auto;opacity:0;transform:translate3d(-50%,-50%,0);transition:opacity .16s linear,filter .18s ease-out;will-change:transform,opacity,filter;backface-visibility:hidden}
       .private-entrance{position:fixed;inset:0;z-index:40;display:grid;place-items:center;overflow:hidden;background:#320610;color:#fff;text-align:center;padding:32px;transition:background-color .7s ease,opacity .55s ease 1.2s}
       .entrance-grain{position:absolute;inset:0;opacity:.32;background:radial-gradient(circle at 50% 38%,#7a213b77,transparent 42%),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.08'/%3E%3C/svg%3E")}
       .entrance-content{position:relative;width:min(540px,100%);animation:entranceReveal 1.4s cubic-bezier(.22,1,.36,1) both}
