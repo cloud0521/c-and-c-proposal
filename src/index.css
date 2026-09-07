@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap");
 
 /* =========================================================
    ROOT / DESIGN TOKENS
@@ -14,6 +14,58 @@
   --line: #ddc5bb;
 }
 
+/* Keep the cover search precisely centered and give its copy one stable reveal. */
+.invitation-app .page.cover .lookup {
+  align-self: center;
+  box-sizing: border-box;
+  width: min(470px, calc(100% - 40px));
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.invitation-app .page.cover .lookup input,
+.invitation-app .page.cover .lookup .results {
+  box-sizing: border-box;
+}
+
+.invitation-app .page.cover.active .cover-instruction,
+.invitation-app .page.cover.active .lookup {
+  animation: none !important;
+  opacity: 1;
+  transform: none;
+}
+
+.invitation-app.opening-revealed .page.cover.active .cover-instruction {
+  animation: cover-instruction-reveal 650ms ease 180ms both !important;
+}
+
+.invitation-app.opening-revealed .page.cover.active .lookup {
+  animation: cover-lookup-reveal 620ms ease 300ms both !important;
+}
+
+@keyframes cover-instruction-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cover-lookup-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 /* =========================================================
    GLOBAL RESET
@@ -31,7 +83,7 @@ body {
   margin: 0;
   background: var(--light);
   color: var(--ink);
-  font-family: 'DM Sans', sans-serif;
+  font-family: "DM Sans", sans-serif;
 }
 
 button,
@@ -42,7 +94,6 @@ a {
 button {
   cursor: pointer;
 }
-
 
 /* =========================================================
    NAVIGATION
@@ -66,7 +117,9 @@ button {
 
 .monogram {
   color: #fff;
-  font: 600 20px 'Playfair Display', serif;
+  font:
+    600 20px "Playfair Display",
+    serif;
   text-decoration: none;
 }
 
@@ -100,7 +153,6 @@ button {
   text-transform: uppercase;
 }
 
-
 /* =========================================================
    HERO / GUEST LOOKUP
 ========================================================= */
@@ -123,22 +175,9 @@ button {
   text-align: center;
 
   background:
-    radial-gradient(
-      circle at 78% 17%,
-      #8c354d 0,
-      transparent 25%
-    ),
-    radial-gradient(
-      circle at 8% 70%,
-      #7e2440 0,
-      transparent 27%
-    ),
-    linear-gradient(
-      125deg,
-      #250510 0%,
-      var(--wine) 54%,
-      #692038 100%
-    );
+    radial-gradient(circle at 78% 17%, #8c354d 0, transparent 25%),
+    radial-gradient(circle at 8% 70%, #7e2440 0, transparent 27%),
+    linear-gradient(125deg, #250510 0%, var(--wine) 54%, #692038 100%);
 }
 
 .eyebrow {
@@ -146,7 +185,9 @@ button {
 
   color: var(--rose);
 
-  font: 500 10px 'DM Mono', monospace;
+  font:
+    500 10px "DM Mono",
+    monospace;
   letter-spacing: 0.22em;
   text-transform: uppercase;
 }
@@ -158,8 +199,8 @@ button {
 .hero h1 {
   margin: 0;
 
-  font: 500 clamp(58px, 8.5vw, 112px) / 0.88
-    'Playfair Display',
+  font:
+    500 clamp(58px, 8.5vw, 112px) / 0.88 "Playfair Display",
     serif;
 
   letter-spacing: -0.055em;
@@ -178,7 +219,6 @@ button {
 
   opacity: 0.82;
 }
-
 
 /* =========================================================
    GUEST SEARCH
@@ -213,7 +253,9 @@ button {
   border: 1px solid #e7ae9199;
   outline: none;
 
-  font: 14px 'DM Sans', sans-serif;
+  font:
+    14px "DM Sans",
+    sans-serif;
 }
 
 .guest-search input::placeholder {
@@ -224,7 +266,6 @@ button {
   border-color: #e7ae91;
   box-shadow: 0 0 0 3px #dca18a29;
 }
-
 
 /* =========================================================
    SEARCH RESULTS
@@ -266,7 +307,9 @@ button {
 
 .search-results button span {
   color: var(--wine);
-  font: 600 16px 'Playfair Display', serif;
+  font:
+    600 16px "Playfair Display",
+    serif;
 }
 
 .search-results button small {
@@ -274,7 +317,9 @@ button {
 
   color: #a36b61;
 
-  font: 9px 'DM Mono', monospace;
+  font:
+    9px "DM Mono",
+    monospace;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -296,7 +341,6 @@ button {
   font-size: 12px;
 }
 
-
 /* =========================================================
    HERO SECONDARY ELEMENTS
 ========================================================= */
@@ -304,7 +348,9 @@ button {
 .hero-date {
   margin: 18px 0 0;
 
-  font: 500 10px 'DM Mono', monospace;
+  font:
+    500 10px "DM Mono",
+    monospace;
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
@@ -322,14 +368,13 @@ button {
 }
 
 .scroll-cue em {
-  font-family: 'Playfair Display', serif;
+  font-family: "Playfair Display", serif;
   font-size: 13px;
 }
 
 .scroll-cue span {
   font-size: 18px;
 }
-
 
 /* =========================================================
    DECORATIVE ELEMENTS
@@ -350,7 +395,7 @@ button {
 
   color: #b8756d;
 
-  font-family: 'Playfair Display', serif;
+  font-family: "Playfair Display", serif;
 
   opacity: 0.24;
 }
@@ -384,7 +429,6 @@ button {
   transform: rotate(-20deg);
 }
 
-
 /* =========================================================
    GENERAL SECTION SPACING
 ========================================================= */
@@ -392,7 +436,6 @@ button {
 .section-pad {
   padding: 120px clamp(24px, 8vw, 140px);
 }
-
 
 /* =========================================================
    INTRO
@@ -417,8 +460,8 @@ button {
 
   color: var(--wine);
 
-  font: 500 clamp(39px, 5.3vw, 72px) / 1.04
-    'Playfair Display',
+  font:
+    500 clamp(39px, 5.3vw, 72px) / 1.04 "Playfair Display",
     serif;
 
   letter-spacing: -0.045em;
@@ -434,18 +477,12 @@ button {
   line-height: 1.9;
 }
 
-
 /* =========================================================
    PERSONAL PROPOSAL
 ========================================================= */
 
 .personal-proposal {
-  background: linear-gradient(
-    90deg,
-    #f7eee8,
-    #fffaf6,
-    #f7eee8
-  );
+  background: linear-gradient(90deg, #f7eee8, #fffaf6, #f7eee8);
 }
 
 .personal-proposal h2 {
@@ -453,8 +490,8 @@ button {
 
   color: var(--wine);
 
-  font: 500 clamp(48px, 7vw, 86px) / 1
-    'Playfair Display',
+  font:
+    500 clamp(48px, 7vw, 86px) / 1 "Playfair Display",
     serif;
 
   letter-spacing: -0.045em;
@@ -483,11 +520,10 @@ button {
 
   color: #b16d62;
 
-  font: 500 clamp(36px, 5vw, 61px) / 1.1
-    'Playfair Display',
+  font:
+    500 clamp(36px, 5vw, 61px) / 1.1 "Playfair Display",
     serif;
 }
-
 
 /* =========================================================
    PRIMARY BUTTONS
@@ -515,7 +551,6 @@ button {
   background: var(--wine);
   border-color: var(--wine);
 }
-
 
 /* =========================================================
    WEDDING DETAILS
@@ -562,8 +597,8 @@ button {
 
   color: var(--wine);
 
-  font: 600 27px / 1.15
-    'Playfair Display',
+  font:
+    600 27px / 1.15 "Playfair Display",
     serif;
 }
 
@@ -590,7 +625,6 @@ button {
   text-transform: uppercase;
 }
 
-
 /* =========================================================
    DATE BLOCK
 ========================================================= */
@@ -610,7 +644,9 @@ button {
 .date-block p {
   margin: 0;
 
-  font: 500 10px 'DM Mono', monospace;
+  font:
+    500 10px "DM Mono",
+    monospace;
   letter-spacing: 0.16em;
   text-transform: uppercase;
 }
@@ -620,8 +656,8 @@ button {
 
   color: #e7ae91;
 
-  font: 600 100px / 0.95
-    'Playfair Display',
+  font:
+    600 100px / 0.95 "Playfair Display",
     serif;
 }
 
@@ -632,7 +668,6 @@ button {
 
   font-size: 16px;
 }
-
 
 /* =========================================================
    ENTOURAGE
@@ -662,7 +697,9 @@ button {
 
   color: var(--wine);
 
-  font: 600 18px 'Playfair Display', serif;
+  font:
+    600 18px "Playfair Display",
+    serif;
 }
 
 .role ul {
@@ -678,7 +715,6 @@ button {
   font-size: 12px;
   line-height: 1.75;
 }
-
 
 /* =========================================================
    CLOSING
@@ -698,13 +734,15 @@ button {
 
 .closing::before,
 .closing::after {
-  content: '✽';
+  content: "✽";
 
   position: absolute;
 
   color: #b9766e;
 
-  font: 350px 'Playfair Display', serif;
+  font:
+    350px "Playfair Display",
+    serif;
   line-height: 0;
 
   opacity: 0.22;
@@ -733,7 +771,6 @@ button {
   color: #fff;
 }
 
-
 /* =========================================================
    FOOTER
 ========================================================= */
@@ -750,15 +787,18 @@ footer {
 }
 
 footer span {
-  font: 600 22px 'Playfair Display', serif;
+  font:
+    600 22px "Playfair Display",
+    serif;
 }
 
 footer p {
-  font: 10px 'DM Mono', monospace;
+  font:
+    10px "DM Mono",
+    monospace;
   letter-spacing: 0.15em;
   text-transform: uppercase;
 }
-
 
 /* =========================================================
    RSVP MODAL
@@ -799,7 +839,9 @@ footer p {
 
   color: var(--wine);
 
-  font: 10px 'DM Mono', monospace;
+  font:
+    10px "DM Mono",
+    monospace;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -820,7 +862,9 @@ footer p {
 
   outline: 0;
 
-  font: 14px 'DM Sans', sans-serif;
+  font:
+    14px "DM Sans",
+    sans-serif;
 }
 
 .rsvp-modal textarea {
@@ -847,7 +891,6 @@ footer p {
   margin-top: 28px;
 }
 
-
 /* =========================================================
    TOAST
 ========================================================= */
@@ -870,7 +913,6 @@ footer p {
 
   transform: translateX(-50%);
 }
-
 
 /* =========================================================
    MOBILE

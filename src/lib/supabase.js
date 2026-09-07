@@ -38,3 +38,46 @@ export async function submitEntourageResponse({ entourageId, response, message }
   if (error) throw error
   return data
 }
+
+export async function discoverWeddingAdmin(candidateCode) {
+  const { data, error } = await supabase.rpc('discover_wedding_admin', {
+    p_wedding_slug: weddingSlug,
+    p_candidate_code: candidateCode,
+  })
+  if (error) throw error
+  return data?.admin_match === true
+}
+
+export async function loginWeddingAdmin({ adminCode, password }) {
+  const { data, error } = await supabase.rpc('login_wedding_admin', {
+    p_wedding_slug: weddingSlug,
+    p_admin_code: adminCode,
+    p_password: password,
+  })
+  if (error) throw error
+  return data
+}
+
+export async function validateWeddingAdminSession(sessionToken) {
+  const { data, error } = await supabase.rpc('validate_wedding_admin_session', {
+    p_session_token: sessionToken,
+  })
+  if (error) throw error
+  return data
+}
+
+export async function getWeddingAdminEntourageResponses(sessionToken) {
+  const { data, error } = await supabase.rpc('get_wedding_admin_entourage_responses', {
+    p_session_token: sessionToken,
+  })
+  if (error) throw error
+  return data ?? []
+}
+
+export async function logoutWeddingAdmin(sessionToken) {
+  const { data, error } = await supabase.rpc('logout_wedding_admin', {
+    p_session_token: sessionToken,
+  })
+  if (error) throw error
+  return data === true
+}
